@@ -42,20 +42,20 @@ This module creates following resources. I am usign HA, getting first 2 AZs auto
 
 
 ### OUTPUTS 
-vpc_id
-public_subnet_ids - 2 
-private_subnet_ids - 2
-database_subnet_ids - 2
+* vpc_id
+* public_subnet_ids - 2 
+* private_subnet_ids - 2
+* database_subnet_ids - 2
 
 
 
 ### Note
-Tags
-common tags 
-project=roboshop
-terraform = true
-environment = dev
+* Tags
+- common tags 
+- project=roboshop
+- terraform = true
+- environment = dev
 
-Resource tags
-vpc ,subnet,nat tags
-merge common and resource tags, resource tags value is placed
+* Resource tags
+- vpc ,subnet,nat tags
+- merge common and resource tags, resource tags value is placed
