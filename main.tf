@@ -30,6 +30,7 @@ resource "aws_subnet" "public" {
   vpc_id = aws_vpc.main.id
   cidr_block = var.public_subnets_cidr[count.index]
   availability_zone = local.az_names[count.index]
+  map_public_ip_on_launch = true
   tags = merge(
     var.common_tags,
     var.public_subnets_tags,
@@ -75,6 +76,19 @@ resource "aws_subnet" "database" {
 resource "aws_eip" "eip" {
   domain = "vpc"
 }
+
+
+
+resource "aws_db_subnet_group" "default" {
+  name       = "${local.name}"
+  subnet_ids = aws_subnet.database[*].id
+
+  tags = {
+    Name = "${local.name}"
+  }
+}
+
+
 
 #NAT GW
 resource "aws_nat_gateway" "main" {
@@ -133,18 +147,18 @@ resource "aws_route_table" "database" {
 }
 
 #ROUTES
-resource "aws_route" "public" {
+resource "aws_route" "public_route" {
   route_table_id = aws_route_table.public.id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id = aws_internet_gateway.gw.id
 }
 
-resource "aws_route" "private" {
+resource "aws_route" "private_route" {
   route_table_id = aws_route_table.private.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id = aws_nat_gateway.main.id
 }
-resource "aws_route" "database" {
+resource "aws_route" "database_route" {
   route_table_id = aws_route_table.database.id
   destination_cidr_block = "0.0.0.0/0"
   nat_gateway_id = aws_nat_gateway.main.id
@@ -153,19 +167,19 @@ resource "aws_route" "database" {
 #ROUTE TABLE ASSOCIATION WITH SUBNETS
 resource "aws_route_table_association" "public" {
   count = length(var.public_subnets_cidr)#looping because 2 subnets are here
-  subnet_id = element(aws_subnet.public[*].id,count.index)
+  subnet_id = element(aws_subnet.public[*].id, count.index)
   route_table_id = aws_route_table.public.id
 
 }
 resource "aws_route_table_association" "private" {
   count = length(var.private_subnets_cidr)#looping because 2 subnets are here
-  subnet_id = element(aws_subnet.private[*].id,count.index)
+  subnet_id = element(aws_subnet.private[*].id, count.index)
   route_table_id = aws_route_table.private.id
 
 }
 resource "aws_route_table_association" "database" {
   count = length(var.database_subnets_cidr)#looping because 2 subnets are here
-  subnet_id = element(aws_subnet.database[*].id,count.index)
+  subnet_id = element(aws_subnet.database[*].id, count.index)
   route_table_id = aws_route_table.database.id
 
 }
